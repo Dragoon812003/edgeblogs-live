@@ -1,9 +1,8 @@
 from django.contrib import admin
 from django.urls import path
-from froala_editor import views
 from django.conf.urls import include
 
-from blog.views import frontpage, post_detail, search, signup, login2, handlesignup, handlelogin, handlelogout, add_blog, faq, tandc, haf, privacypolicy, contactus, disclamer, addPostDone, addPost, yourBlogs
+from blog.views import frontpage, post_detail, search, signup, login2, handlesignup, handlelogin, handlelogout, add_blog, faq, tandc, haf, privacypolicy, contactus, disclamer, addPostDone, addPost, yourBlogs, postComment
 
 admin.site.site_header = "Edge Blogs Admin"
 admin.site.site_title = "Edge Blogs Admin Panel"
@@ -27,5 +26,6 @@ urlpatterns = [
     path('privacypolicy', privacypolicy, name='privacypolicy'),
     path('addPost', addPost, name='addPost'),
     path('addPostDone', addPostDone, name='addPostDone'),
+    path('postComment', postComment, name='postComment'),
     path('yourBlogs', yourBlogs, name='yourBlogs'),
 ]

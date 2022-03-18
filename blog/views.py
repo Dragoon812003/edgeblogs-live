@@ -3,7 +3,8 @@ from django.shortcuts import render, HttpResponse, redirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-from .models import Post
+from blog.templatetags import extras
+from .models import Post, Comment
 
 def frontpage(request):
     posts = Post.objects.all()
@@ -12,7 +13,15 @@ def frontpage(request):
 
 def post_detail(request, slug):
     post = Post.objects.filter(slug=slug).first()
-    context = {'post': post}
+    comments = Comment.objects.filter(post=post, parent = None)
+    replies = Comment.objects.filter(post=post).exclude(parent = None)
+    replyDict={}
+    for reply in replies:
+        if reply.parent.sno not in replyDict.keys():
+            replyDict[reply.parent.sno] = [reply]
+        else:
+            replyDict[reply.parent.sno].append(reply)
+    context = {'post': post, 'comments': comments, 'replyDict': replyDict}
     return render(request, 'blog/post_detail.html', context)
 
 
@@ -50,7 +59,12 @@ def handlesignup(request):
             myuser = User.objects.create_user(username, email, password)
             myuser.birthday = birthday
             myuser.save()
-            messages.success(request, 'Your Edge Blogs account has been succesfully created. Please Login')
+
+            loginUsername = username
+            loginPassword = password
+            user = authenticate(username=loginUsername, password=loginPassword)
+            login(request, user)
+            messages.success(request, 'Your Edge Blogs account has been succesfully created')
             return redirect('/')
         else:
             messages.error(request, 'Your passwords do not match please try again')
@@ -131,3 +145,31 @@ def yourBlogs(request):
     posts = (postsAuthor).distinct()
     params = {'posts': posts}
     return render(request, 'blog/yourBlogs.html', params)
+
+def postComment(request):
+    if request.method == "POST":
+        content = request.POST.get("content")
+        user = request.user
+        postSlug = request.POST.get("postSlug")
+        post = Post.objects.get(slug=postSlug)
+        parentSno = request.POST.get("parentSno")
+
+        if parentSno == "":
+            if(len(content.strip())):
+                mycomment = Comment.objects.create()
+                mycomment.content = content
+                mycomment.user = user
+                mycomment.post = post
+                mycomment.save()
+        else:
+            if(len(content.strip())):
+                parent = Comment.objects.get(sno=parentSno)
+                mycomment = Comment.objects.create()
+                mycomment.content = content
+                mycomment.user = user
+                mycomment.post = post
+                mycomment.parent = parent
+                mycomment.save()
+
+    return redirect('/')
+    

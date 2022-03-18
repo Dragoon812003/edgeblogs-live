@@ -10,7 +10,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Edge Blogs</title>
+  <title>Edge Blogs | Read and Write Blogs</title>
   <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://demos.creative-tim.com/notus-js/assets/vendor/@fortawesome/fontawesome-free/css/all.min.css">
   <link rel="icon" href="{% static 'Images/logo.png' %}">
@@ -30,7 +30,7 @@
 <div class="w-full text-gray-700 bg-white dark-mode:text-gray-200 dark-mode:bg-gray-800 positionSticky">
   <div x-data="{ open: false }" class="flex flex-col max-w-screen-xl px-4 mx-auto md:items-center md:justify-between md:flex-row md:px-6 lg:px-8">
     <div class="p-4 flex flex-row items-center justify-between">
-      <a href="#" class="text-lg font-semibold tracking-widest text-gray-900 uppercase rounded-lg dark-mode:text-white focus:outline-none focus:shadow-outline">Edge Blogs</a>
+      <a href="/" class="text-lg font-semibold tracking-widest text-gray-900 uppercase rounded-lg dark-mode:text-white focus:outline-none focus:shadow-outline">Edge Blogs</a>
       <button class="md:hidden rounded-lg focus:outline-none focus:shadow-outline" @click="open = !open">
         <svg fill="currentColor" viewBox="0 0 20 20" class="w-6 h-6">
           <path x-show="!open" fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM9 15a1 1 0 011-1h6a1 1 0 110 2h-6a1 1 0 01-1-1z" clip-rule="evenodd"></path>
@@ -40,8 +40,7 @@
     </div>
     <nav :class="{'flex': open, 'hidden': !open}" class="flex-col flex-grow pb-4 md:pb-0 hidden md:flex md:justify-end md:flex-row">
     <form method="get" action="/search">
-        <input type="search" placeholder="Search" aria-label="Search" class="border-2 rounded mx-3" name="query"
-          id="query">
+        <input type="search" placeholder="Search" aria-label="Search" class="border-2 rounded mx-3" name="query" id="query">
         <button type="submit" class="inline-flex items-center bg-gray-100 border-0 py-1 px-3 focus:outline-none hover:bg-gray-200 rounded text-base mt-4 md:mt-0">Search
           <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             class="w-4 h-4 ml-1" viewBox="0 0 24 24">
@@ -86,14 +85,13 @@
           <div class="md:w-64 md:mb-0 mb-6 flex-shrink-0 flex flex-col">
             <span class="font-semibold title-font text-gray-700">Blog</span>
             <span class="mt-1 text-gray-500 text-sm">Posted on {{ post.datepublished }}</span>
-            <span class="font-semibold text-sm text-gray-600">- {{ post.author }}</span>
+            <span class="font-semibold text-sm text-gray-600">- {{ post.author }}</span> 
           </div>
           <div class="md:flex-grow">
             <h2 class="text-2xl font-medium text-gray-900 title-font mb-2">{{ post.title }}</h2>
             <p class="leading-relaxed">{{ post.intro }}</p>
             <a class="text-indigo-500 inline-flex items-center mt-4" href="{% url 'post_detail' post.slug %}">Read More
-              <svg class="w-4 h-4 ml-2" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"
-                stroke-linecap="round" stroke-linejoin="round">
+              <svg class="w-4 h-4 ml-2" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M5 12h14"></path>
                 <path d="M12 5l7 7-7 7"></path>
               </svg>
@@ -115,7 +113,7 @@
    		<div class="max-w-md">
       		<div class="text-5xl font-dark font-bold">No Blogs Yet</div>
             <p class="text-2xl md:text-3xl font-light leading-normal">Sorry there are no blogs added to this website yet</p>
-          <p class="mb-8">But dont worry, you can add some blogs. Please sign up and login and then add some blogs</p>
+          <p class="mb-8">But dont worry, you can add some blogs. Please sign up or login and then add some blogs</p>
           
     </div>
       <div class="max-w-lg">

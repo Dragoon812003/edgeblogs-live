@@ -19,6 +19,20 @@ class Post(models.Model):
     def datepublished(self):
         return self.date_added.strftime('%d %B %Y')
 
+class Comment(models.Model):
+    sno = models.AutoField(primary_key=True)
+    content = models.TextField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True)
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True)
+    date_added = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-date_added']
+
+    def datepublished(self):
+        return self.date_added.strftime('%d %B %Y')
+
 def slug_generator(sender, instance, *args, **kwargs):
     if not instance.slug:
         instance.slug = unique_slug_generator(instance)

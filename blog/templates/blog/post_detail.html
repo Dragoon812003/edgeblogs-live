@@ -2,6 +2,7 @@
 
 {% block content %}
 {% load static %}
+{% load extras %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -13,7 +14,7 @@
   <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
   <link rel="icon" href="{% static 'Images/logo.png' %}">
 
-  <title>{{ post.title }}</title>
+  <title>{{ post.title }} | Edge Blogs</title>
   <style>
     .positionSticky {
       position: sticky;
@@ -31,7 +32,7 @@
 <div class="w-full text-gray-700 bg-white dark-mode:text-gray-200 dark-mode:bg-gray-800 positionSticky">
   <div x-data="{ open: false }" class="flex flex-col max-w-screen-xl px-4 mx-auto md:items-center md:justify-between md:flex-row md:px-6 lg:px-8">
     <div class="p-4 flex flex-row items-center justify-between">
-      <a href="#" class="text-lg font-semibold tracking-widest text-gray-900 uppercase rounded-lg dark-mode:text-white focus:outline-none focus:shadow-outline">Edge Blogs</a>
+      <a href="/" class="text-lg font-semibold tracking-widest text-gray-900 uppercase rounded-lg dark-mode:text-white focus:outline-none focus:shadow-outline">Edge Blogs</a>
       <button class="md:hidden rounded-lg focus:outline-none focus:shadow-outline" @click="open = !open">
         <svg fill="currentColor" viewBox="0 0 20 20" class="w-6 h-6">
           <path x-show="!open" fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM9 15a1 1 0 011-1h6a1 1 0 110 2h-6a1 1 0 01-1-1z" clip-rule="evenodd"></path>
@@ -79,14 +80,100 @@
 <article class="py-12 px-4">
   <h1 class="text-4xl text-center mb-4 font-semibold font-heading font-semibold">{{ post.title }}</h1>
   <p class="text-center">
-    <span>Posted at {{ post.datepublished }}, by</span>
+    <span>Posted on {{ post.datepublished }}, by</span>
     <a class="ml-1 text-indigo-600 hover:underline" href="#">{{ post.author }}</a>
   </p>
   <br>
   <div class="max-w-3xl mx-auto">{% autoescape off %} {{ post.body }} {% endautoescape %}</div>
 </article>
 
-<!-- footer -->
+<!-- Comment Section -->
+
+<!-- component -->
+
+<div class="antialiased mx-auto max-w-screen-sm">
+  <h3 class="mb-4 text-lg font-semibold text-gray-900">Comments({{ comments|length }})</h3>
+
+  <div class="space-y-4">
+
+
+  <div class="flex justify-center">
+  <div class="mb-3 xl:w-96">
+  
+  </div>
+</div>
+
+
+{% if user.is_authenticated %}
+<!-- comment form -->
+<div class="flex mx-auto items-center justify-center shadow-lg mt-56 mx-8 mb-4 max-w-lg">
+   <form action="/postComment" method="post" class="w-full max-w-xl bg-white rounded-lg px-4 pt-2">
+   {% csrf_token %}
+      <div class="flex flex-wrap -mx-3 mb-6">
+         <h2 class="px-4 pt-3 pb-2 text-gray-800 text-lg">Add a new comment</h2>
+         <div class="w-full md:w-full px-3 mb-2 mt-2">
+            <textarea name="content" class="bg-gray-100 rounded border border-gray-400 leading-normal resize-none w-full h-20 py-2 px-3 font-medium placeholder-gray-700 focus:outline-none focus:bg-white" name="body" placeholder='Type Your Comment' required></textarea>
+            <input type="hidden" name="postSlug" value="{{ post.slug }}" />
+            <input type="hidden" name="parentSno" value="" />
+         </div>
+         <div class="w-full md:w-full flex items-start md:w-full px-3">
+            <div class="flex items-start w-1/2 text-gray-700 px-2 mr-auto">
+               <svg fill="none" class="w-5 h-5 text-gray-600 mr-1" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+               </svg>
+               <p class="text-xs md:text-sm pt-px">The comments will be visible publically</p>
+            </div>
+            <div class="-mr-1">
+               <button type='submit' class="bg-white text-gray-700 font-medium py-1 px-4 border border-gray-400 rounded-lg tracking-wide mr-1 hover:bg-gray-100" value='Post Comment'>Post Comment </button>
+            </div>
+         </div>
+      </form>
+   </div>
+</div>
+{% endif %}
+
+{% for comment in comments %}
+     <div class="flex">
+      <div class="flex-shrink-0 mr-3">
+        <img class="mt-2 rounded-full w-8 h-8 sm:w-10 sm:h-10" src="{% static 'Images/no_profile.png' %}" alt="">
+      </div>
+      <div class="flex-1 border rounded-lg px-4 py-2 sm:px-6 sm:py-4 leading-relaxed">
+        <strong>{{ comment.user }}</strong> <span class="text-xs text-gray-400">{{ comment.datepublished }}</span>
+        <p class="text-sm">
+         {{ comment.content }}
+        </p>
+        <h4 class="my-5 uppercase tracking-wide text-gray-400 font-bold text-xs hover:cursor-pointer clickListener">{{ replyDict|get_val:comment.sno|length }} Replies</h4>
+        <div class="space-y-4 hidingEvent hidden">
+        {% if user.is_authenticated %}
+        <form action="/postComment" method="post">
+            {% csrf_token %}
+        <input name="content" class="flex-1 border-solid rounded-lg px-4 py-2 sm:px-6 sm:py-4 leading-relaxed" placeholder="Enter Reply Here">
+        <input type="hidden" name="postSlug" value="{{ post.slug }}" />
+        <input type="hidden" name="parentSno" value="{{ comment.sno }}" />
+         <input type='submit' class="bg-white text-gray-700 font-medium py-1 px-4 border border-gray-400 rounded-lg tracking-wide mr-1 hover:bg-gray-100" value='Post Reply'>
+          </form>
+          {% endif %}
+          {% for reply in replyDict|get_val:comment.sno %}
+          <div class="flex">
+            <div class="flex-shrink-0 mr-3">
+              <img class="mt-3 rounded-full w-6 h-6 sm:w-8 sm:h-8" src="{% static 'Images/no_profile.png' %}" alt="">
+            </div>
+            <div class="flex-1 bg-gray-100 rounded-lg px-4 py-2 sm:px-6 sm:py-4 leading-relaxed">
+              <strong>{{ reply.user }}</strong> <span class="text-xs text-gray-400">{{ reply.datepublished }}</span>
+              <p class="text-xs sm:text-sm">
+                {{ reply.content }}
+              </p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+{% endfor %}
+</div>
+</div>
+
+  <!-- footer -->
 
 <footer class="relative bg-blueGray-200 pt-8 pb-6">
   <div class="container mx-auto px-4">
@@ -161,7 +248,26 @@
     </div>
   </div>
 </footer>
-</body>
+<script>
 
+const clickListener = document.getElementsByClassName('clickListener')
+const hidingEvent = document.getElementsByClassName('hidingEvent')
+const noOfTimesClicked = []
+noOfTimesClicked.length = clickListener.length
+
+for (let i = 0; i < clickListener.length; i++) {
+  noOfTimesClicked[i] = 0
+  clickListener[i].addEventListener('click', () => {
+    noOfTimesClicked[i]++
+    if (noOfTimesClicked[i] % 2 == 0) {
+        hidingEvent[i].classList.add('hidden')
+    } else {
+        hidingEvent[i].classList.remove('hidden')
+    }
+  })
+}
+
+</script>
+</body>
 </html>
 {% endblock %}
