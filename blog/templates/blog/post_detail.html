@@ -15,6 +15,9 @@
   <link rel="icon" href="{% static 'Images/logo.png' %}">
 
   <title>{{ post.title }} | Edge Blogs</title>
+
+  <meta name="description" content="{{ post.intro }}">
+  <meta name="author" content="{{ post.author }}">
   <style>
     .positionSticky {
       position: sticky;
