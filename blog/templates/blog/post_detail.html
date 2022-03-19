@@ -24,6 +24,26 @@
       top: 0;
       background-color: white;
     }
+
+    .mTLOB {
+    -webkit-flex-shrink: 0;
+    -ms-flex-negative: 0;
+    flex-shrink: 0;
+  }
+
+  .Szr5J {
+    display: block;
+    overflow: hidden;
+    text-indent: 110%;
+    white-space: nowrap;
+  }
+
+  .coreSpriteVerifiedBadge {
+    background-position: 0 -369px;
+    height: 18px;
+    width: 18px;
+  }
+
   </style>
 </head>
 
@@ -81,10 +101,14 @@
 
 <!-- component -->
 <article class="py-12 px-4">
+  {% comment %} <svg src="{% static 'Images/like.svg' %}">
+  <svg src="{% static 'Images/dislike.svg' %}"> {% endcomment %}
+
   <h1 class="text-4xl text-center mb-4 font-semibold font-heading font-semibold">{{ post.title }}</h1>
   <p class="text-center">
     <span>Posted on {{ post.datepublished }}, by</span>
-    <a class="ml-1 text-indigo-600 hover:underline" href="#">{{ post.author }}</a>
+    <a class="inline-block ml-1 text-indigo-600 hover:underline" href="#">{{ post.author }} {% if post.author.account.is_verified %}<img class="inline-block" src="https://img.icons8.com/color/16/000000/verified-badge.png"/>{% endif %}</a>
+    {% comment %} <img class="max-w-3xl mx-auto" src = "{% static 'Images/like.png' %}"> {% endcomment %}
   </p>
   <br>
   <div class="max-w-3xl mx-auto">{% autoescape off %} {{ post.body }} {% endautoescape %}</div>
@@ -141,7 +165,7 @@
         <img class="mt-2 rounded-full w-8 h-8 sm:w-10 sm:h-10" src="{% static 'Images/no_profile.png' %}" alt="">
       </div>
       <div class="flex-1 border rounded-lg px-4 py-2 sm:px-6 sm:py-4 leading-relaxed">
-        <strong>{{ comment.user }}</strong> <span class="text-xs text-gray-400">{{ comment.datepublished }}</span>
+        <strong>{{ comment.user }} {% if comment.user.account.is_verified %}<img class="inline-block" src="https://img.icons8.com/color/16/000000/verified-badge.png"/>{% endif %}</strong> <span class="text-xs text-gray-400">{{ comment.datepublished }}</span>
         <p class="text-sm">
          {{ comment.content }}
         </p>
@@ -150,9 +174,9 @@
         {% if user.is_authenticated %}
         <form action="/postComment" method="post">
             {% csrf_token %}
-        <input name="content" class="flex-1 border-solid rounded-lg px-4 py-2 sm:px-6 sm:py-4 leading-relaxed" placeholder="Enter Reply Here">
+        <input name="content" class="flex-1 border-solid rounded-lg px-4 py-2 sm:px-6 sm:py-4 leading-relaxed" placeholder="Enter Reply Here" required>
         <input type="hidden" name="postSlug" value="{{ post.slug }}" />
-        <input type="hidden" name="parentSno" value="{{ comment.sno }}" />
+        <input type="hidden" name="parentSno" value="{{ comment.sno }}"/>
          <input type='submit' class="bg-white text-gray-700 font-medium py-1 px-4 border border-gray-400 rounded-lg tracking-wide mr-1 hover:bg-gray-100" value='Post Reply'>
           </form>
           {% endif %}
@@ -162,7 +186,7 @@
               <img class="mt-3 rounded-full w-6 h-6 sm:w-8 sm:h-8" src="{% static 'Images/no_profile.png' %}" alt="">
             </div>
             <div class="flex-1 bg-gray-100 rounded-lg px-4 py-2 sm:px-6 sm:py-4 leading-relaxed">
-              <strong>{{ reply.user }}</strong> <span class="text-xs text-gray-400">{{ reply.datepublished }}</span>
+              <strong>{{ reply.user }} {% if comment.user.account.is_verified %}<img class="inline-block" src="https://img.icons8.com/color/16/000000/verified-badge.png"/>{% endif %}</strong> <span class="text-xs text-gray-400">{{ reply.datepublished }}</span>
               <p class="text-xs sm:text-sm">
                 {{ reply.content }}
               </p>

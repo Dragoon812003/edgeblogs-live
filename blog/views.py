@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from blog.templatetags import extras
-from .models import Post, Comment
+from .models import Account, Post, Comment
 
 def frontpage(request):
     posts = Post.objects.all()
@@ -57,8 +57,10 @@ def handlesignup(request):
         # Checks for errornomous inputs
         if password == confirmPassword:
             myuser = User.objects.create_user(username, email, password)
-            myuser.birthday = birthday
             myuser.save()
+            account = Account.objects.create(user=myuser)
+            account.birthday = birthday
+            account.save()
 
             loginUsername = username
             loginPassword = password
@@ -94,8 +96,10 @@ def handlelogin(request):
 def handlelogout(request):
     if request.method == 'POST':
         logout(request)
+        messages.success(request, "Logged out succesfully")
         return redirect('/')
     else:
+        messages.error(request, "Logged out failed! Try again with a correct method")
         return redirect('/')
 
 def add_blog(request):
@@ -132,8 +136,10 @@ def addPostDone(request):
         mypost.intro = description
         mypost.body = body
         mypost.save()
+        messages.success(request, "Your Blog has been Posted Succesfully!")
         return redirect('/')
     else:
+        messages.error(request, "There was an error in the creation of Blog! Try again with a correct method!")
         return redirect('/')
         
 
@@ -161,6 +167,7 @@ def postComment(request):
                 mycomment.user = user
                 mycomment.post = post
                 mycomment.save()
+                messages.success(request, "Your comment has been posted succesfully!")
         else:
             if(len(content.strip())):
                 parent = Comment.objects.get(sno=parentSno)
@@ -170,6 +177,7 @@ def postComment(request):
                 mycomment.post = post
                 mycomment.parent = parent
                 mycomment.save()
+                messages.success(request, "Your reply has been posted succesfully!")
 
     return redirect('/')
     
