@@ -1,8 +1,10 @@
 from django.core.checks import messages
-from django.shortcuts import render, HttpResponse, redirect
+from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 from blog.templatetags import extras
 from .models import Account, Post, Comment
 
@@ -15,13 +17,21 @@ def post_detail(request, slug):
     post = Post.objects.filter(slug=slug).first()
     comments = Comment.objects.filter(post=post, parent = None)
     replies = Comment.objects.filter(post=post).exclude(parent = None)
+    total_likes = post.total_likes()
+    total_dislikes = post.total_dislikes()
+    liked = False
+    disliked = False
+    if post.likes.filter(id=request.user.id).exists():
+        liked = True
+    if post.dislikes.filter(id=request.user.id).exists():
+        disliked = True
     replyDict={}
     for reply in replies:
         if reply.parent.sno not in replyDict.keys():
             replyDict[reply.parent.sno] = [reply]
         else:
             replyDict[reply.parent.sno].append(reply)
-    context = {'post': post, 'comments': comments, 'replyDict': replyDict}
+    context = {'post': post, 'comments': comments, 'replyDict': replyDict, 'total_likes': total_likes, 'liked': liked, 'total_dislikes': total_dislikes, 'disliked': disliked}
     return render(request, 'blog/post_detail.html', context)
 
 
@@ -179,5 +189,40 @@ def postComment(request):
                 mycomment.save()
                 messages.success(request, "Your reply has been posted succesfully!")
 
-    return redirect('/')
+    return redirect('/' + str(post.slug))
+
+def LikeView(request, pk):
+    if request.user.is_authenticated:
+        post = get_object_or_404(Post, id=request.POST.get('post_id'))
+        liked = False
+        if post.likes.filter(id=request.user.id).exists():
+            post.likes.remove(request.user)
+            liked = False
+        else:
+            if post.dislikes.filter(id=request.user.id).exists():
+                post.dislikes.remove(request.user)
+            post.likes.add(request.user)
+            liked = True
+        return redirect('/' + str(post.slug))
+    else:
+        messages.error(request, "You must be logged in to like a post!")
+        return render(request, 'blog/login.html')
+
+def DislikeView(request, pk):
+    if request.user.is_authenticated:
+        post = get_object_or_404(Post, id=request.POST.get('post_id'))
+        disliked = False
+        if post.dislikes.filter(id=request.user.id).exists():
+            post.dislikes.remove(request.user)
+            disliked = False
+        else:
+            if post.likes.filter(id=request.user.id).exists():
+                post.likes.remove(request.user)
+            post.dislikes.add(request.user)
+            disliked = True
+        print("disliked")
+        return redirect('/' + str(post.slug))
+    else:
+        messages.error(request, "You must be logged in to dislike a post!")
+        return render(request, 'blog/login.html')
     

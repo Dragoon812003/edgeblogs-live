@@ -16,10 +16,6 @@
       top: 0;
       background-color: white;
     }
-
-    .message{
-      z-index: -1000;
-    }
   </style>
 </head>
 
@@ -265,7 +261,6 @@
     for (let i = 0; i < close.length; i++) {
         close[i].addEventListener('click', function () {
           message[i].style.display = 'none'
-          console.log("Clicked")
         })
     }
   }, 100)

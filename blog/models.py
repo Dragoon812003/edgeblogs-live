@@ -12,6 +12,14 @@ class Post(models.Model):
     intro = models.TextField()
     body = models.TextField()
     date_added = models.DateTimeField(auto_now_add=True)
+    likes = models.ManyToManyField(User, related_name='blog_posts')
+    dislikes = models.ManyToManyField(User, related_name='blog_post')
+
+    def total_likes(self):
+        return self.likes.count()
+    
+    def total_dislikes(self):
+        return self.dislikes.count()
 
     class Meta:
         ordering = ['-date_added']

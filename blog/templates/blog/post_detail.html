@@ -99,6 +99,38 @@
   </div>
 </div>
 
+  {% if messages %}
+  <ul class="messages">
+    {% for message in messages %}
+    {% if message.tags == "success" %}
+    <div class="message flex p-4 mb-4 bg-green-100 border-t-4 border-green-500 dark:bg-green-200" role="alert">
+      <svg class="flex-shrink-0 w-5 h-5 text-green-700" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+      <div class="ml-3 text-sm font-medium text-green-700">
+        {{ message }}
+      </div>
+      <button type="button" class="ml-auto -mx-1.5 -my-1.5 bg-green-100 dark:bg-green-200 text-green-500 rounded-lg focus:ring-2 focus:ring-green-400 p-1.5 hover:bg-green-200 dark:hover:bg-green-300 inline-flex h-8 w-8"  data-collapse-toggle="alert-border-3" aria-label="Close">
+        <span class="sr-only">Dismiss</span>
+        <svg class=close "w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+      </button>
+  </div>
+    </div>
+      {% elif message.tags == "error" %}
+      <div class="message flex p-4 mb-4 bg-red-100 border-t-4 border-red-500 dark:bg-red-200" role="alert">
+        <svg class="flex-shrink-0 w-5 h-5 text-red-700" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+        <div class="ml-3 text-sm font-medium text-red-700">
+          {{ message }}
+        </div>
+        <button type="button" class="ml-auto -mx-1.5 -my-1.5 bg-red-100 dark:bg-red-200 text-red-500 rounded-lg focus:ring-2 focus:ring-red-400 p-1.5 hover:bg-red-200 dark:hover:bg-red-300 inline-flex h-8 w-8"  data-collapse-toggle="alert-border-2" aria-label="Close">
+          <span class="sr-only">Dismiss</span>
+          <svg class="close w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+        </button>
+    </div>
+      {% endif %}
+
+    {% endfor %}
+  </ul>
+{% endif %}
+
 <!-- component -->
 <article class="py-12 px-4">
   {% comment %} <svg src="{% static 'Images/like.svg' %}">
@@ -108,7 +140,19 @@
   <p class="text-center">
     <span>Posted on {{ post.datepublished }}, by</span>
     <a class="inline-block ml-1 text-indigo-600 hover:underline" href="#">{{ post.author }} {% if post.author.account.is_verified %}<img class="inline-block" src="https://img.icons8.com/color/16/000000/verified-badge.png"/>{% endif %}</a>
-    {% comment %} <img class="max-w-3xl mx-auto" src = "{% static 'Images/like.png' %}"> {% endcomment %}
+    <div class="flex justify-around mx-auto max-w-3xl py-6">
+      <form action="{% url 'like_post' post.pk %}" method="POST">
+        {% csrf_token %}
+        {% comment %} <input type="image" src="{% static 'Images/like.png' %}" alt="like" name="post_id" value="{{ post.id }}" class="mx-auto"/>{% if liked %} Liked {% else %} Like {% endif %} {{ total_likes }} {% endcomment %}
+        <button type="submit" src="{% static 'Images/like.png' %}" alt="like" name="post_id" value="{{ post.id }}" class="">{% if liked %} <img  class="" src = "{% static 'Images/liked.png' %}"> {% else %} <img  class="" src = "{% static 'Images/like.png' %}"> {% endif %} {{ total_likes }}</button>
+      </form>
+      {% comment %} <button><img class="" src = "{% static 'Images/subscribe.png' %}"> </button> {% endcomment %}
+      <form action="{% url 'dislike_post' post.pk %}" method="POST">
+        {% csrf_token %}
+      <button type="submit" name="post_id" value="{{ post.id }}" alt="dislike" class="">{% if disliked %} <img class="" src = "{% static 'Images/disliked.png' %}"> {% else %} <img class="" src = "{% static 'Images/dislike.png' %}"> {% endif %} {{ total_dislikes }}</button> 
+    </form>
+    </div>
+    <hr class="max-w-3xl mx-auto">
   </p>
   <br>
   <div class="max-w-3xl mx-auto">{% autoescape off %} {{ post.body }} {% endautoescape %}</div>
@@ -293,6 +337,17 @@ for (let i = 0; i < clickListener.length; i++) {
     }
   })
 }
+
+  setInterval(function () {
+    close = document.getElementsByClassName('close')
+    message = document.getElementsByClassName('message')
+
+    for (let i = 0; i < close.length; i++) {
+        close[i].addEventListener('click', function () {
+          message[i].style.display = 'none'
+        })
+    }
+  }, 100)
 
 </script>
 </body>
