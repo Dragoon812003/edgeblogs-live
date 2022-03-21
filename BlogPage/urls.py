@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path
 from django.conf.urls import include
 
-from blog.views import frontpage, post_detail, search, signup, login2, handlesignup, handlelogin, handlelogout, add_blog, faq, tandc, haf, privacypolicy, contactus, disclamer, addPostDone, addPost, yourBlogs, postComment, LikeView, DislikeView
+from blog.views import frontpage, post_detail, search, signup, login2, handlesignup, handlelogin, handlelogout, add_blog, faq, tandc, haf, privacypolicy, contactus, disclamer, addPostDone, addPost, yourBlogs, postComment, LikeView, DislikeView, SubscribeView
 
 admin.site.site_header = "Edge Blogs Admin"
 admin.site.site_title = "Edge Blogs Admin Panel"
@@ -30,4 +30,5 @@ urlpatterns = [
     path('yourBlogs', yourBlogs, name='yourBlogs'),
     path('like/<int:pk>', LikeView, name='like_post'),
     path('dislike/<int:pk>', DislikeView, name='dislike_post'),
+    path('subscribe/<str:author_name>', SubscribeView, name='subscribe_author'),
 ]

@@ -15,23 +15,29 @@ def frontpage(request):
 
 def post_detail(request, slug):
     post = Post.objects.filter(slug=slug).first()
+    author = post.author
+    account = Account.objects.filter(user=author).first()
     comments = Comment.objects.filter(post=post, parent = None)
     replies = Comment.objects.filter(post=post).exclude(parent = None)
     total_likes = post.total_likes()
     total_dislikes = post.total_dislikes()
+    total_subscribers = account.total_subscribers()
     liked = False
     disliked = False
+    subscribed = False
     if post.likes.filter(id=request.user.id).exists():
         liked = True
     if post.dislikes.filter(id=request.user.id).exists():
         disliked = True
+    if account.subscribers.filter(id=request.user.id).exists():
+        subscribed = True
     replyDict={}
     for reply in replies:
         if reply.parent.sno not in replyDict.keys():
             replyDict[reply.parent.sno] = [reply]
         else:
             replyDict[reply.parent.sno].append(reply)
-    context = {'post': post, 'comments': comments, 'replyDict': replyDict, 'total_likes': total_likes, 'liked': liked, 'total_dislikes': total_dislikes, 'disliked': disliked}
+    context = {'post': post, 'comments': comments, 'replyDict': replyDict, 'total_likes': total_likes, 'liked': liked, 'total_dislikes': total_dislikes, 'disliked': disliked, 'total_subscribers': total_subscribers, 'subscribed': subscribed}
     return render(request, 'blog/post_detail.html', context)
 
 
@@ -224,5 +230,24 @@ def DislikeView(request, pk):
         return redirect('/' + str(post.slug))
     else:
         messages.error(request, "You must be logged in to dislike a post!")
+        return render(request, 'blog/login.html')
+
+def SubscribeView(request, author_name):
+    if request.user.is_authenticated:
+        author = User.objects.get(username=author_name)
+        postSlug = request.POST.get("postSlug")
+        account = Account.objects.get(user=author)
+        subscribed = False
+        if account.subscribers.filter(id=request.user.id).exists():
+            account.subscribers.remove(request.user)
+            subscribed = False
+            messages.success(request, "Successfully Unsubscribed to " + str(author.username) + "!")
+        else:
+            account.subscribers.add(request.user)
+            subscribed = True
+            messages.success(request, "Successfully Subscribed to " + str(author.username) + "!")
+        return redirect('/' + str(postSlug)) 
+    else:
+        messages.error(request, "You must be logged in to subscribe to a post!")
         return render(request, 'blog/login.html')
     

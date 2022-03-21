@@ -31,6 +31,10 @@ class Account(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     birthday = models.DateField(null=True, blank=True)
     is_verified = models.BooleanField(default=False)
+    subscribers = models.ManyToManyField(User, related_name='subscribers')
+
+    def total_subscribers(self):
+        return self.subscribers.count()
 
     def __str__(self):
         return self.user.username

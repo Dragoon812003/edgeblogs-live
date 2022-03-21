@@ -143,13 +143,16 @@
     <div class="flex justify-around mx-auto max-w-3xl py-6">
       <form action="{% url 'like_post' post.pk %}" method="POST">
         {% csrf_token %}
-        {% comment %} <input type="image" src="{% static 'Images/like.png' %}" alt="like" name="post_id" value="{{ post.id }}" class="mx-auto"/>{% if liked %} Liked {% else %} Like {% endif %} {{ total_likes }} {% endcomment %}
         <button type="submit" src="{% static 'Images/like.png' %}" alt="like" name="post_id" value="{{ post.id }}" class="">{% if liked %} <img  class="" src = "{% static 'Images/liked.png' %}"> {% else %} <img  class="" src = "{% static 'Images/like.png' %}"> {% endif %} {{ total_likes }}</button>
       </form>
-      {% comment %} <button><img class="" src = "{% static 'Images/subscribe.png' %}"> </button> {% endcomment %}
       <form action="{% url 'dislike_post' post.pk %}" method="POST">
         {% csrf_token %}
       <button type="submit" name="post_id" value="{{ post.id }}" alt="dislike" class="">{% if disliked %} <img class="" src = "{% static 'Images/disliked.png' %}"> {% else %} <img class="" src = "{% static 'Images/dislike.png' %}"> {% endif %} {{ total_dislikes }}</button> 
+    </form>
+    <form action="{% url 'subscribe_author' post.author %}" method="POST">
+        {% csrf_token %}
+      <input type="hidden" name="postSlug" value="{{ post.slug }}" />
+      <button type="submit" name="post_author" value="{{ post.author }}">{% if subscribed %} <img class="" src = "{% static 'Images/subscribed.png' %}"> {% else %} <img class="" src = "{% static 'Images/subscribe.png' %}"> {% endif %}{{ total_subscribers }}</button>
     </form>
     </div>
     <hr class="max-w-3xl mx-auto">
