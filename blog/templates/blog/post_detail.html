@@ -2,6 +2,7 @@
 
 {% load static %}
 {% load extras %}
+{% load hitcount_tags %}
 
 {% block title %}
   {{ post.title }} | Edge Blogs
@@ -43,6 +44,12 @@
       <input type="hidden" name="postSlug" value="{{ post.slug }}" />
       <button type="submit" name="post_author" value="{{ post.author }}">{% if subscribed %} <img class="" src = "{% static 'Images/subscribed.png' %}"> {% else %} <img class="" src = "{% static 'Images/subscribe.png' %}"> {% endif %}{{ total_subscribers }}</button>
     </form>
+    <div>
+      <button>
+      <img class="mx-auto" src="{% static 'Images/views.png' %}">
+      <div class="mx-auto"> {% get_hit_count for post %} </div>
+      </button>
+    </div>
     </div>
     <hr class="max-w-3xl mx-auto">
   </p>
@@ -136,4 +143,18 @@
 </div>
 </div>
 
+{% endblock %}
+
+{% block script %}
+  <script>
+    const hidingEvent = document.getElementsByClassName('hidingEvent');
+    const clickListener = document.getElementsByClassName('clickListener');
+
+      for (let i = 0; i < clickListener.length; i++) {
+        clickListener[i].addEventListener('click', () => {
+          hidingEvent[i].classList.toggle('hidden');
+        });
+      }
+
+  </script>
 {% endblock %}

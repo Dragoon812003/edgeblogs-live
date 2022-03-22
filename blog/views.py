@@ -5,6 +5,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+from hitcount.views import HitCountDetailView
 from blog.templatetags import extras
 from .models import Account, Post, Comment
 
@@ -22,6 +23,7 @@ def post_detail(request, slug):
     total_likes = post.total_likes()
     total_dislikes = post.total_dislikes()
     total_subscribers = account.total_subscribers()
+    count_hit = True
     liked = False
     disliked = False
     subscribed = False
