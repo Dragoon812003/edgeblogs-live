@@ -5,14 +5,21 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from hitcount.views import HitCountDetailView
 from blog.templatetags import extras
-from .models import Account, Post, Comment
+from .models import Account, IpModel, Post, Comment
 
 def frontpage(request):
     posts = Post.objects.all()
     return render(request, 'blog/frontpage.html', {'posts': posts})
 
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
 
 def post_detail(request, slug):
     post = Post.objects.filter(slug=slug).first()
@@ -23,23 +30,32 @@ def post_detail(request, slug):
     total_likes = post.total_likes()
     total_dislikes = post.total_dislikes()
     total_subscribers = account.total_subscribers()
-    count_hit = True
+    total_views = post.total_views()
     liked = False
     disliked = False
     subscribed = False
+    ip = get_client_ip(request)
+
+    if IpModel.objects.filter(ip=ip).exists():
+        post.views.add(IpModel.objects.get(ip=ip))
+    else:
+        IpModel.objects.create(ip=ip)
+        post.views.add(IpModel.objects.get(ip=ip))
+
     if post.likes.filter(id=request.user.id).exists():
         liked = True
     if post.dislikes.filter(id=request.user.id).exists():
         disliked = True
     if account.subscribers.filter(id=request.user.id).exists():
         subscribed = True
+        
     replyDict={}
     for reply in replies:
         if reply.parent.sno not in replyDict.keys():
             replyDict[reply.parent.sno] = [reply]
         else:
             replyDict[reply.parent.sno].append(reply)
-    context = {'post': post, 'comments': comments, 'replyDict': replyDict, 'total_likes': total_likes, 'liked': liked, 'total_dislikes': total_dislikes, 'disliked': disliked, 'total_subscribers': total_subscribers, 'subscribed': subscribed}
+    context = {'post': post, 'comments': comments, 'replyDict': replyDict, 'total_likes': total_likes, 'liked': liked, 'total_dislikes': total_dislikes, 'disliked': disliked, 'total_subscribers': total_subscribers, 'subscribed': subscribed, 'total_views': total_views}
     return render(request, 'blog/post_detail.html', context)
 
 

@@ -2,7 +2,6 @@
 
 {% load static %}
 {% load extras %}
-{% load hitcount_tags %}
 
 {% block title %}
   {{ post.title }} | Edge Blogs
@@ -47,7 +46,7 @@
     <div>
       <button>
       <img class="mx-auto" src="{% static 'Images/views.png' %}">
-      <div class="mx-auto"> {% get_hit_count for post %} </div>
+      <div class="mx-auto"> {{ total_views }} </div>
       </button>
     </div>
     </div>
