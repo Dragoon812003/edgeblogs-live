@@ -158,16 +158,17 @@
         });
       }
 
-    const shareData = {
-      title: '{{ post.title }}',
-      description: '{{ post.content }}',
-      url: '{{ request.build_absolute_uri }}',
-      image: '{% static 'Images/logo.png' %}'
-    };
-
-    shareBtn.addEventListener('click', async () => {
-      await navigator.share(shareData)
-  });   
+    if(navigator.share !== undefined) {
+    document.addEventListener('DOMContentLoaded', e => {
+      var shareBtn = document.getElementById('shareBtn');
+      shareBtn.addEventListener('click', clickEvent => {
+        clickEvent.preventDefault();
+        navigator.share({title: '{{ post.title }}', text: '{{ post.intro }}', url: '{{ request.build_absolute_uri }}'})
+          .then(() => console.log('Successful share'),
+           error => console.log('Error sharing:', error));
+      });
+    });
+}   
 
   </script>
 {% endblock %}
