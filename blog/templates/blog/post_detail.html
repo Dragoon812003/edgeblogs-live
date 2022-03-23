@@ -49,6 +49,12 @@
       <div class="mx-auto"> {{ total_views }} </div>
       </button>
     </div>
+    <div>
+      <button id="shareBtn">
+      <img class="mx-auto" src="{% static 'Images/share.png' %}">
+      <div class="mx-auto"> Share </div>
+      </button>
+    </div>
     </div>
     <hr class="max-w-3xl mx-auto">
   </p>
@@ -62,11 +68,8 @@
 
 <div class="antialiased mx-auto max-w-screen-sm">
   <h3 class="mb-4 text-lg font-semibold text-gray-900">Comments({{ comments|length }})</h3>
-  
   <div class="space-y-4">
-    
-
-  <div class="flex justify-center">
+    <div class="flex justify-center">
     <div class="mb-3 xl:w-96">
       
   </div>
@@ -154,6 +157,17 @@
           hidingEvent[i].classList.toggle('hidden');
         });
       }
+
+    const shareData = {
+      title: '{{ post.title }}',
+      description: '{{ post.content }}',
+      url: '{{ request.build_absolute_uri }}',
+      image: '{% static 'Images/logo.png' %}'
+    };
+
+    shareBtn.addEventListener('click', async () => {
+      await navigator.share(shareData)
+  });   
 
   </script>
 {% endblock %}
