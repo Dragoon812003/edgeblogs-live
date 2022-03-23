@@ -49,12 +49,6 @@
       <div class="mx-auto"> {{ total_views }} </div>
       </button>
     </div>
-    <div>
-      <button id="shareBtn">
-      <img class="mx-auto" src="{% static 'Images/share.png' %}">
-      <div class="mx-auto"> Share </div>
-      </button>
-    </div>
     </div>
     <hr class="max-w-3xl mx-auto">
   </p>
@@ -156,19 +150,7 @@
         clickListener[i].addEventListener('click', () => {
           hidingEvent[i].classList.toggle('hidden');
         });
-      }
-
-    if(navigator.share !== undefined) {
-    document.addEventListener('DOMContentLoaded', e => {
-      var shareBtn = document.getElementById('shareBtn');
-      shareBtn.addEventListener('click', clickEvent => {
-        clickEvent.preventDefault();
-        navigator.share({title: '{{ post.title }}', text: '{{ post.intro }}', url: '{{ request.build_absolute_uri }}'})
-          .then(() => console.log('Successful share'),
-           error => console.log('Error sharing:', error));
-      });
-    });
-}   
+      } 
 
   </script>
 {% endblock %}
