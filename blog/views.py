@@ -268,4 +268,5 @@ def SubscribeView(request, author_name):
     else:
         messages.error(request, "You must be logged in to subscribe to a post!")
         return render(request, 'blog/login.html')
+
     

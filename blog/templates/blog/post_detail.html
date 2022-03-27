@@ -100,44 +100,42 @@
 
 {% for comment in comments %}
      <div class="flex">
-      <div class="flex-shrink-0 mr-3">
-        <img class="mt-2 rounded-full w-8 h-8 sm:w-10 sm:h-10" src="{% static 'Images/no_profile.png' %}" alt="">
-      </div>
-      <div class="flex-1 border rounded-lg px-4 py-2 sm:px-6 sm:py-4 leading-relaxed">
-        <strong>{{ comment.user }} {% if comment.user.account.is_verified %}<img class="inline-block" src="https://img.icons8.com/color/16/000000/verified-badge.png"/>{% endif %}</strong> <span class="text-xs text-gray-400">{{ comment.datepublished }}</span>
-        <p class="text-sm">
-         {{ comment.content }}
-        </p>
-        <h4 class="my-5 uppercase tracking-wide text-gray-400 font-bold text-xs hover:cursor-pointer clickListener">{{ replyDict|get_val:comment.sno|length }} Replies</h4>
-        <div class="space-y-4 hidingEvent hidden">
-        {% if user.is_authenticated %}
-        <form action="/postComment" method="post">
-          {% csrf_token %}
-          <input name="content" class="flex-1 border-solid rounded-lg px-4 py-2 sm:px-6 sm:py-4 leading-relaxed" placeholder="Enter Reply Here" required>
-          <input type="hidden" name="postSlug" value="{{ post.slug }}" />
-          <input type="hidden" name="parentSno" value="{{ comment.sno }}"/>
-          <input type='submit' class="bg-white text-gray-700 font-medium py-1 px-4 border border-gray-400 rounded-lg tracking-wide mr-1 hover:bg-gray-100" value='Post Reply'>
-          </form>
-          {% endif %}
-          {% for reply in replyDict|get_val:comment.sno %}
-          <div class="flex">
-            <div class="flex-shrink-0 mr-3">
-              <img class="mt-3 rounded-full w-6 h-6 sm:w-8 sm:h-8" src="{% static 'Images/no_profile.png' %}" alt="">
+        <div class="flex-shrink-0 mr-3">
+          <img class="mt-2 rounded-full w-8 h-8 sm:w-10 sm:h-10" src="{% static 'Images/no_profile.png' %}" alt="">
+        </div>
+        <div class="flex-1 border rounded-lg px-4 py-2 sm:px-6 sm:py-4 leading-relaxed">
+          <strong>{{ comment.user }} {% if comment.user.account.is_verified %}<img class="inline-block" src="https://img.icons8.com/color/16/000000/verified-badge.png"/>{% endif %}</strong> <span class="text-xs text-gray-400">{{ comment.datepublished }}</span>
+          <p class="text-sm">
+           {{ comment.content }}
+          </p>
+          <h4 class="my-5 uppercase tracking-wide text-gray-400 font-bold text-xs hover:cursor-pointer clickListener">{{ replyDict|get_val:comment.sno|length }} Replies</h4>
+          <div class="space-y-4 hidingEvent hidden">
+          {% if user.is_authenticated %}
+          <form action="/postComment" method="post">
+            {% csrf_token %}
+            <input name="content" class="flex-1 border-solid rounded-lg px-4 py-2 sm:px-6 sm:py-4 leading-relaxed" placeholder="Enter Reply Here" required>
+            <input type="hidden" name="postSlug" value="{{ post.slug }}" />
+            <input type="hidden" name="parentSno" value="{{ comment.sno }}"/>
+            <input type='submit' class="bg-white text-gray-700 font-medium py-1 px-4 border border-gray-400 rounded-lg tracking-wide mr-1 hover:bg-gray-100" value='Post Reply'>
+            </form>
+            {% endif %}
+            {% for reply in replyDict|get_val:comment.sno %}
+            <div class="flex">
+              <div class="flex-shrink-0 mr-3">
+                <img class="mt-3 rounded-full w-6 h-6 sm:w-8 sm:h-8" src="{% static 'Images/no_profile.png' %}" alt="">
+              </div>
+              <div class="flex-1 bg-gray-100 rounded-lg px-4 py-2 sm:px-6 sm:py-4 leading-relaxed">
+                <strong>{{ reply.user }} {% if reply.user.account.is_verified %}<img class="inline-block" src="https://img.icons8.com/color/16/000000/verified-badge.png"/>{% endif %}</strong> <span class="text-xs text-gray-400">{{ reply.datepublished }}</span>
+                <p class="text-xs sm:text-sm">
+                  {{ reply.content }}
+                </p>
+              </div>
             </div>
-            <div class="flex-1 bg-gray-100 rounded-lg px-4 py-2 sm:px-6 sm:py-4 leading-relaxed">
-              <strong>{{ reply.user }} {% if reply.user.account.is_verified %}<img class="inline-block" src="https://img.icons8.com/color/16/000000/verified-badge.png"/>{% endif %}</strong> <span class="text-xs text-gray-400">{{ reply.datepublished }}</span>
-              <p class="text-xs sm:text-sm">
-                {{ reply.content }}
-              </p>
-            </div>
+            {% endfor %}
           </div>
-          {% endfor %}
         </div>
       </div>
-    </div>
 {% endfor %}
-</div>
-</div>
 
 {% endblock %}
 

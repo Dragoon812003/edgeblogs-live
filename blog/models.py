@@ -31,6 +31,9 @@ class Post(models.Model):
     def total_views(self):
         return self.views.count()
 
+    def timeToRead(self):
+        return int(len(self.body.split())/238)
+
     class Meta:
         ordering = ['-date_added']
 
