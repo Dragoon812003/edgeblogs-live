@@ -180,12 +180,6 @@ def addPostDone(request):
 def addPost(request):
     return render(request, 'blog/addPost.html')
 
-def yourBlogs(request):
-    postsAuthor = Post.objects.filter(author__username__icontains=request.user)
-    posts = (postsAuthor).distinct()
-    params = {'posts': posts}
-    return render(request, 'blog/yourBlogs.html', params)
-
 def postComment(request):
     if request.method == "POST":
         content = request.POST.get("content")
@@ -268,5 +262,12 @@ def SubscribeView(request, author_name):
     else:
         messages.error(request, "You must be logged in to subscribe to a post!")
         return render(request, 'blog/login.html')
+
+def AuthorPostView(request, author_name):
+    author = User.objects.get(username=author_name)
+    postsAuthor = Post.objects.filter(author__username__icontains=author_name)
+    posts = (postsAuthor).distinct()
+    params = {'posts': posts, 'author': author}
+    return render(request, 'blog/authorBlogs.html', params)
 
     

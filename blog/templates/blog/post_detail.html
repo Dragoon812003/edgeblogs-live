@@ -28,7 +28,7 @@
   <h1 class="text-4xl text-center mb-4 font-semibold font-heading font-semibold">{{ post.title }}</h1>
   <p class="text-center">
     <span>Posted on {{ post.datepublished }}, by</span>
-    <a class="inline-block ml-1 text-indigo-600 hover:underline" href="#">{{ post.author }} {% if post.author.account.is_verified %}<img class="inline-block" src="https://img.icons8.com/color/16/000000/verified-badge.png"/>{% endif %}</a>
+    <a class="inline-block ml-1 text-indigo-600 hover:underline" href="{% url 'author_post_view' post.author %}">{{ post.author }} {% if post.author.account.is_verified %}<img class="inline-block" src="https://img.icons8.com/color/16/000000/verified-badge.png"/>{% endif %}</a>
     <div class="flex justify-around mx-auto max-w-3xl py-6">
       <form action="{% url 'like_post' post.pk %}" method="POST">
         {% csrf_token %}
