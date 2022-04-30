@@ -1,25 +1,28 @@
+from email import policy
 from django.core.checks import messages
 from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from blog.templatetags import extras
-from .models import Account, IpModel, Post, Comment
+from .models import Account, IpModel, Post, Comment, Category
+from BlogPage.utils import get_category, get_client_ip, remove_html_tags
+from BlogPage.recommneding import *
 
 def frontpage(request):
     posts = Post.objects.all()
-    return render(request, 'blog/frontpage.html', {'posts': posts})
-
-
-def get_client_ip(request):
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
+    if request.user.is_authenticated:
+        viewed_posts = request.user.account.history.all()
+        sort_key = []
+        for post in posts:
+            sort_key.append(get_score(post, request.user))
+        posts = sorted(posts, key=lambda x: get_score(x, request.user), reverse=True)
+        return render(request, 'blog/frontpage.html', {'posts': posts, 'viewed_posts': viewed_posts})
     else:
-        ip = request.META.get('REMOTE_ADDR')
-    return ip
+        posts = sorted(posts, key=score, reverse=True)
+        return render(request, 'blog/frontpage.html', {'posts': posts})
 
 def post_detail(request, slug):
     post = Post.objects.filter(slug=slug).first()
@@ -35,7 +38,14 @@ def post_detail(request, slug):
     disliked = False
     subscribed = False
     ip = get_client_ip(request)
-
+    categories = Category.objects.filter(posts=post)
+    
+    if request.user.is_authenticated:
+        request.user.account.history.add(post)
+        request.user.account.save()
+        for category in categories:
+            request.user.account.categories_liked.add(category)
+            request.user.account.save()
     if IpModel.objects.filter(ip=ip).exists():
         post.views.add(IpModel.objects.get(ip=ip))
     else:
@@ -84,30 +94,71 @@ def handlesignup(request):
     if request.method == 'POST':
         username = request.POST['username']
         email = request.POST['email']
-        birthday = request.POST['birthday']
         password = request.POST['password']
         confirmPassword = request.POST['confirmPassword']
-
+        
         # Checks for errornomous inputs
         if password == confirmPassword:
-            myuser = User.objects.create_user(username, email, password)
-            myuser.save()
-            account = Account.objects.create(user=myuser)
-            account.birthday = birthday
-            account.save()
-
-            loginUsername = username
-            loginPassword = password
-            user = authenticate(username=loginUsername, password=loginPassword)
-            login(request, user)
-            messages.success(request, 'Your Edge Blogs account has been succesfully created')
-            return redirect('/')
+            if User.objects.filter(username=username).exists():
+                messages.error(request, 'Username already exists!')
+                return redirect('/signup')
+            elif User.objects.filter(email=email).exists():
+                messages.error(request, 'Email already exists!')
+                return redirect('/signup')
+            elif username.__contains__(' '):
+                messages.error(request, 'Username cannot contain a space!')
+                return redirect('/signup')
+            elif len(username) < 3:
+                messages.error(request, 'Username must be at least 3 characters long!')
+                return redirect('/signup')
+            elif len(username) > 16:
+                messages.error(request, 'Username cannot be more than 16 characters long!')
+                return redirect('/signup')
+            else:
+                myuser = User.objects.create_user(username, email, password)
+                myuser.save()
+                account = Account.objects.create(user=myuser)
+                account.save()
+                loginUsername = username
+                loginPassword = password
+                user = authenticate(username=loginUsername, password=loginPassword)
+                login(request, user)
+                messages.success(request, 'Your Edge Blogs account has been succesfully created')
+                return redirect('/')
         else:
             messages.error(request, 'Your passwords do not match please try again')
             return redirect('/signup')
     else:
         return redirect('/')
 
+def signingup(request):
+    if request.method == "POST":
+        type = request.POST['type']
+        if type == 'username':
+            username = request.POST['username']
+            if User.objects.filter(username=username).exists():
+                data = {'status': 'error', "message": "Username already exists!", "username": username}
+            elif username == "":
+                data = {'status': 'error', "message": "Username cannot be empty", "username": username}
+            elif len(username) < 3:
+                data = {'status': 'error', "message": "Username must be at least 3 characters", "username": username}
+            elif len(username) > 16:
+                data = {'status': 'error', "message": "Username must be less than 16 characters", "username": username}
+            else:
+                data = {'status': 'success', "message": "Username is available!", "username": username}
+            return JsonResponse(data, safe=False)
+        elif type == 'email':
+            email = request.POST['email']
+            if User.objects.filter(email=email).exists():
+                data = {'status': 'error', "message": "Email already exists!", "email": email}
+            elif email == "":
+                data = {'status': 'error', "message": "Email cannot be empty", "email": email}
+            else:
+                data = {'status': 'success', "message": "Email is available!", "email": email}
+            return JsonResponse(data, safe=False)
+    else:
+        return redirect('/signup')
+    
 
 def handlelogin(request):
     if request.method == 'POST':
@@ -122,7 +173,7 @@ def handlelogin(request):
             return redirect('/')
         else:
             messages.error(request, 'No matching user found')
-            return redirect('/')
+            return redirect('/login2')
     else:
         return redirect('/')
 
@@ -133,7 +184,8 @@ def handlelogout(request):
         messages.success(request, "Logged out succesfully")
         return redirect('/')
     else:
-        messages.error(request, "Logged out failed! Try again with a correct method")
+        messages.error(request, "Logged out failed! Please try again")
+        return redirect('/')
         return redirect('/')
 
 def add_blog(request):
@@ -169,14 +221,30 @@ def addPostDone(request):
         mypost.author = author
         mypost.intro = description
         mypost.body = body
+
+        mypost.author.account.save()
         mypost.save()
+        new_categories = get_category(mypost)
+        total_words = 0
+        for new_category in new_categories:
+            total_words += int(new_category['count'])
+        for new_category in new_categories:
+            if new_categories not in Category.objects.all():
+                new_category_add = Category.objects.create()
+                new_category_add.word = new_category['word']
+                new_category_add.count = new_category['count']
+                new_category_add.probability = new_category['count']/total_words
+                new_category_add.save()
+                mypost.categories.add(new_category_add)
+            
+            mypost.save()
+        
         messages.success(request, "Your Blog has been Posted Succesfully!")
-        return redirect('/')
+        return redirect('/post/' + mypost.slug)
     else:
-        messages.error(request, "There was an error in the creation of Blog! Try again with a correct method!")
+        messages.error(request, "There was an error in the creation of Blog! Please try again!")
         return redirect('/')
         
-
 def addPost(request):
     return render(request, 'blog/addPost.html')
 
@@ -207,12 +275,14 @@ def postComment(request):
                 mycomment.save()
                 messages.success(request, "Your reply has been posted succesfully!")
 
-    return redirect('/' + str(post.slug))
+    return redirect('/post/' + str(post.slug))
 
-def LikeView(request, pk):
+def LikeView(request, slug):
     if request.user.is_authenticated:
-        post = get_object_or_404(Post, id=request.POST.get('post_id'))
+        post = Post.objects.filter(slug=slug).first()
+        
         liked = False
+
         if post.likes.filter(id=request.user.id).exists():
             post.likes.remove(request.user)
             liked = False
@@ -221,14 +291,15 @@ def LikeView(request, pk):
                 post.dislikes.remove(request.user)
             post.likes.add(request.user)
             liked = True
-        return redirect('/' + str(post.slug))
+        data = {'status': 'success', 'liked': liked, 'total_likes': post.total_likes(), 'disliked': False, 'total_dislikes': post.total_dislikes()}
     else:
-        messages.error(request, "You must be logged in to like a post!")
-        return render(request, 'blog/login.html')
+        data = {'status': 'error', 'message': 'You must be logged in to like a post. Click <a href="/signup" class="underline hover:text-blue-700">here</a> to Sign Up!'}
+    return JsonResponse(data, safe=False)
 
-def DislikeView(request, pk):
+def DislikeView(request, slug):
     if request.user.is_authenticated:
-        post = get_object_or_404(Post, id=request.POST.get('post_id'))
+        post = Post.objects.filter(slug=slug).first()
+
         disliked = False
         if post.dislikes.filter(id=request.user.id).exists():
             post.dislikes.remove(request.user)
@@ -236,13 +307,13 @@ def DislikeView(request, pk):
         else:
             if post.likes.filter(id=request.user.id).exists():
                 post.likes.remove(request.user)
+                liked = False
             post.dislikes.add(request.user)
             disliked = True
-        print("disliked")
-        return redirect('/' + str(post.slug))
+        data = {'status': 'success', 'liked': False, 'total_likes': post.total_likes(), 'disliked': disliked, 'total_dislikes': post.total_dislikes()}
     else:
-        messages.error(request, "You must be logged in to dislike a post!")
-        return render(request, 'blog/login.html')
+        data = {'status': 'error', 'message': 'You must be logged in to dislike a post. Click <a href="/signup" class="underline hover:text-blue-700">here</a> to Sign Up!'}
+    return JsonResponse(data, safe=False)
 
 def SubscribeView(request, author_name):
     if request.user.is_authenticated:
@@ -253,21 +324,57 @@ def SubscribeView(request, author_name):
         if account.subscribers.filter(id=request.user.id).exists():
             account.subscribers.remove(request.user)
             subscribed = False
-            messages.success(request, "Successfully Unsubscribed to " + str(author.username) + "!")
         else:
             account.subscribers.add(request.user)
             subscribed = True
-            messages.success(request, "Successfully Subscribed to " + str(author.username) + "!")
-        return redirect('/' + str(postSlug)) 
+        data = {'status': 'success', 'subscribed': subscribed, 'total_subscribers': account.total_subscribers()}
     else:
-        messages.error(request, "You must be logged in to subscribe to a post!")
-        return render(request, 'blog/login.html')
+        data = {'status': 'error', 'message': 'You must be logged in to subscribe to a user. Click <a href="/signup" class="underline hover:text-blue-700">here</a> to Sign Up!'}
+    return JsonResponse(data, safe=False)
 
 def AuthorPostView(request, author_name):
     author = User.objects.get(username=author_name)
     postsAuthor = Post.objects.filter(author__username__icontains=author_name)
-    posts = (postsAuthor).distinct()
+    posts = postsAuthor.distinct()
     params = {'posts': posts, 'author': author}
     return render(request, 'blog/authorBlogs.html', params)
 
+def recalculate_categories(request):
+    if request.user.is_superuser:
+        print("Recalculating categories...")
+        Categories = Category.objects.all()
+        Posts = Post.objects.all()
+        for edit_category in Categories:
+            edit_category.delete()
+        print("")
+        print("All Categories Deleted")
+        print("")
+        for post in Posts:
+            new_categories = get_category(post)
+            total_words = 0
+            print("")
+            print("Post: " + post.title)
+            print("")
+            for new_category in new_categories:
+                total_words += int(new_category['count'])
+            for new_category in new_categories:
+                if new_categories not in Categories:
+                    new_category_add = Category.objects.create()
+                    new_category_add.word = new_category['word']
+                    new_category_add.count = new_category['count']
+                    new_category_add.probability = new_category['count']/total_words
+                    new_category_add.save()
+                    post.categories.add(new_category_add)
+                    print("new category", new_category_add)
+                    print("new category count", new_category_add.count)
+                    print("total words", total_words)
+                    print("")
+                
+                post.save()
+            print("********** Post Saved **********")
+            print("")
+        print("All Categories Recalculated")
+        return redirect('/')
+    else:
+        return HttpResponse("GET OUT OF HERE!")
     

@@ -1,0 +1,24 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block title %}
+{{ policy.title }}
+{% endblock %}
+
+{% block author %}
+{{ policy.author }}
+{% endblock %}
+
+{% block content %}
+<article class="py-12 px-4">
+    <h1 class="text-4xl text-center mb-4 font-semibold font-heading font-semibold">{{ policy.title }}</h1>
+    <p class="text-center">
+      <span>Posted at January 21, 2022, by</span>
+      <a class="ml-1 text-indigo-600 hover:underline" href="#">{{ policy.author }}</a>
+    </p>
+    <br>
+    <div class="max-w-3xl mx-auto">
+        {{ policy.body }}
+    </div>
+</article>
+{% endblock %}

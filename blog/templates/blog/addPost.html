@@ -27,17 +27,17 @@
                     {% csrf_token %}
                         <div class="mb-4">
                             <label class="text-xl text-gray-600">Title <span class="text-red-500">*</span></label></br>
-                            <input type="text" class="border-2 border-gray-300 p-2 w-full" name="title" id="title" value="" required>
+                            <input type="text" autocomplete="off" class="border-2 border-gray-300 p-2 w-full" name="title" id="title" value="" required>
                         </div>
 
                         <div class="mb-4">
                             <label class="text-xl text-gray-600">Description <span class="text-red-500">*</span></label></br>
-                            <input type="text" class="border-2 border-gray-300 p-2 w-full" name="description" id="description" required>
+                            <input type="text" autocomplete="off" class="border-2 border-gray-300 p-2 w-full" name="description" id="description" required
                         </div>
 
                         <div class="mb-8">
                             <label class="text-xl text-gray-600">Content <span class="text-red-500">*</span></label></br>
-                            <textarea name="content" class="border-2 border-gray-500">
+                            <textarea name="content" autocomplete="off" class="border-2 border-gray-500">
                                 
                             </textarea>
                         </div>

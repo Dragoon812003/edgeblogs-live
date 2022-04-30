@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+from unicodedata import category
 from django.db import models
 from django.db.models.fields.related import ForeignKey
 from django.contrib.auth.models import User
@@ -11,6 +13,14 @@ class IpModel(models.Model):
     def __str__(self):
         return self.ip
 
+class Category(models.Model):
+    word = models.CharField(max_length=255)
+    count = models.IntegerField(default=0)
+    probability = models.FloatField(default=0)
+
+    def __str__(self):
+        return self.word
+
 class Post(models.Model):
     title = models.CharField(max_length=255)
     author = models.ForeignKey(User, default=User, on_delete=models.CASCADE, null=True)
@@ -21,6 +31,7 @@ class Post(models.Model):
     likes = models.ManyToManyField(User, related_name='blog_posts')
     dislikes = models.ManyToManyField(User, related_name='blog_post')
     views = models.ManyToManyField(IpModel, related_name='post_views', blank=True)
+    categories = models.ManyToManyField(Category, related_name='posts')
 
     def total_likes(self):
         return self.likes.count()
@@ -32,19 +43,27 @@ class Post(models.Model):
         return self.views.count()
 
     def timeToRead(self):
+        if int(len(self.body.split())/238) == 0:
+            return "< 1"
         return int(len(self.body.split())/238)
 
+    def __str__(self):
+        return self.title
+
     class Meta:
-        ordering = ['-date_added']
+        ordering = ['date_added']
 
     def datepublished(self):
         return self.date_added.strftime('%d %B %Y')
 
 class Account(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    birthday = models.DateField(null=True, blank=True)
     is_verified = models.BooleanField(default=False)
     subscribers = models.ManyToManyField(User, related_name='subscribers')
+    categories_liked = models.ManyToManyField(Category, related_name='categories_liked')
+    categories_disliked = models.ManyToManyField(Category, related_name='categories_disliked')
+    history = models.ManyToManyField(Post, related_name='history')
+    reputation = models.FloatField(default=1)
 
     def total_subscribers(self):
         return self.subscribers.count()
@@ -66,6 +85,9 @@ class Comment(models.Model):
     def datepublished(self):
         return self.date_added.strftime('%d %B %Y')
 
+    def __str__(self):
+        return self.user.username + ': ' + self.content
+        
 def slug_generator(sender, instance, *args, **kwargs):
     if not instance.slug:
         instance.slug = unique_slug_generator(instance)

@@ -22,7 +22,12 @@
 
   <!-- Body -->
 {%if posts|length > 0 %}
-  <h1 class="mx-auto">Search Results: </h1>
+<section class="flex bg-gray-100 items-center justify-center py-8">
+  <div class="text-center">
+      <p class="text-xl font-medium tracking-wider">Search Results For:</p>
+      <h2 class="mt-6 text-2xl font-bold text-indigo-500 underline cursor-pointer md:text-2xl"> {{ query }} </h2>
+  </div>
+</section>
 {% endif %}
 
     {% if posts|length <= 0 %} 

@@ -2,9 +2,9 @@ from django.contrib import admin
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.auth.admin import UserAdmin
-from .models import IpModel, Post, Comment, Account
+from .models import Category, IpModel, Post, Comment, Account
 
-admin.site.register((Post, Comment, IpModel))
+admin.site.register((Post, Comment, IpModel, Category))
 
 class AccountInLine(admin.StackedInline):
     model = Account

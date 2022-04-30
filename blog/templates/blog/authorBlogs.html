@@ -17,10 +17,26 @@
 {% block author %}
 
 {% endblock %}
-  
+
+{% block style %}
+
+{% endblock %}
+
 {% block content %}
 
  <!-- Body  -->
+ <!-- <div class="bg-gray-100 h-64 flex justify-center content-evenly text-2xl font-bold">
+  <div> Post Wriiten by </div>
+   <br>
+   <div class="text-blue-500 underline"> {{ author }} </div>
+ </div> -->
+
+ <section class="flex bg-gray-100 items-center justify-center py-8">
+  <div class="text-center">
+      <p class="text-xl font-medium tracking-wider">Post's Written By</p>
+      <h2 class="mt-6 text-2xl font-bold text-indigo-500 underline cursor-pointer md:text-2xl">{{ author }} {% if author.account.is_verified %}<img class="inline-block h-8" src="https://img.icons8.com/color/16/000000/verified-badge.png"/>{% endif %} </h2>
+  </div>
+</section>
     {% for post in posts %}
 
     <section class="text-gray-600 body-font overflow-hidden">
