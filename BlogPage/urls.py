@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import path
 from django.conf.urls import include
+from django.views.generic.base import TemplateView
 
 from blog.views import *
 
@@ -33,4 +34,5 @@ urlpatterns = [
     path('author/<str:author_name>', AuthorPostView, name='author_post_view'),
     path('recalculate', recalculate_categories, name='recalculate'),
     path('signingup', signingup, name='signingup'),
+    path('.well-known/pki-validation/EB4C74D8504541863C3C3862D4C478E1.txt', read_file),
 ]

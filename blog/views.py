@@ -1,4 +1,3 @@
-from email import policy
 from django.core.checks import messages
 from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
 from django.contrib import messages
@@ -329,7 +328,7 @@ def SubscribeView(request, author_name):
             subscribed = True
         data = {'status': 'success', 'subscribed': subscribed, 'total_subscribers': account.total_subscribers()}
     else:
-        data = {'status': 'error', 'message': 'You must be logged in to subscribe to a user. Click <a href="/signup" class="underline hover:text-blue-700">here</a> to Sign Up!'}
+        data = {'status': 'error', 'message': 'You must be logged in to subscribe to a author. Click <a href="/signup" class="underline hover:text-blue-700">here</a> to Sign Up!'}
     return JsonResponse(data, safe=False)
 
 def AuthorPostView(request, author_name):
@@ -378,3 +377,9 @@ def recalculate_categories(request):
     else:
         return HttpResponse("GET OUT OF HERE!")
     
+def read_file(request):
+    f = open('validation.txt', 'r')
+    file_content = f.read()
+    f.close()
+    return HttpResponse(file_content, content_type="text/plain")
+
