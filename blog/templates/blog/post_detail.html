@@ -58,6 +58,12 @@
       <div class="mx-auto"> {{ total_views }} </div>
       </button>
     </div>
+    <div>
+      <button id="share-btn">
+      <img class="mx-auto" src="{% static 'Images/share.png' %}">
+      <div class="mx-auto"> Share </div>
+      </button>
+    </div>
     </div>
     <hr class="max-w-3xl mx-auto">
   </p>
@@ -270,5 +276,16 @@
         });
       });
       
+
+      // Sharing
+      shareBtn = document.getElementById('share-btn');
+
+      shareBtn.addEventListener('click', () => {
+        navigator.share({
+          title: '{{ post.title }}',
+          text: '{{ post.content }}',
+          url: '{% url "post_detail" post.slug %}',
+        })
+      })
   </script>
 {% endblock %}
