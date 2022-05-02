@@ -101,6 +101,16 @@
     let canSubmitEmail = false;
     let canSubmitPassword = false;
 
+    const debounce = (func, delay) => {
+      let debounceTimer
+      return function() {
+          const context = this
+          const args = arguments
+              clearTimeout(debounceTimer)
+                  debounceTimer = setTimeout(() => func.apply(context, args), delay)
+        }
+      }
+
     // Handling Username
     usernameInput.addEventListener('input', function() {
         $.ajax({
@@ -112,7 +122,7 @@
                     'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val()
                 },
 
-            success: function(data) {
+            success: debounce(function(data) {
                 if (data.status == 'success') {
                     $('#username-message').removeClass('bg-red-100 border-red-500 dark:bg-red-200 text-red-700 hidden');
                     $('#username-content').removeClass('text-red-700')
@@ -135,14 +145,14 @@
                     $('#username-content').text(data.message);
                     canSubmitUsername = false
                 }
-            },
+            }),
 
         })
     });
 
     usernameInput.addEventListener('keydown', function(e) {
         if (e.keyCode == 32) {
-            e.preventDefault();
+                e.preventDefault();
                 $('#username-content').text('Username cannot contain spaces');
                 $('#username-message').removeClass('bg-green-100 border-green-500 dark:bg-green-200 text-green-700 hidden');
                 $('#username-content').removeClass('text-green-700')
@@ -194,7 +204,7 @@
         })
     })
 
-    emailInput.addEventListener('keydown', function(e) {
+    emailInput.addEventListener('keydown', debounce(function(e) {
         if (e.keyCode == 32) {
             e.preventDefault();
                 $('#email-content').text('Email cannot contain spaces');
@@ -206,7 +216,7 @@
                 $('#email-info').addClass('text-red-700')
                 canSubmitEmail = false
         }
-    });
+    }, 500));
 
     //Handling Password
     confirmPasswordInput.addEventListener('input', function() {
